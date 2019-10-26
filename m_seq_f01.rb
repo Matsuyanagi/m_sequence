@@ -35,9 +35,9 @@ settings = {
 	bit_size: 8,
 }
 
-# 値のチェック状態を記録しておく
-# ビットフィールドでチェック済みかを保持する
-class ResultRecoder
+# 指定の数値が使われていることを記録しておく。
+# 内部的にはビットフィールドで使用済みかを保持する。
+class UsingNumberRecorder
 	# 3 なら 8bit
 	# 4 なら 16bit の配列を確保する
 	BUFFER_WORD_BIT_SHIFT_SIZE = 3
@@ -108,36 +108,36 @@ end
 #-----------------------------------------------------------------------------
 def mseq_ff( settings )
 	bit_size = settings[ :bit_size ]
-	result_recoder = ResultRecoder.new( 2 ** bit_size )
+	using_number_recoder = UsingNumberRecorder.new( 2 ** bit_size )
 
 =begin	
-	pp result_recoder
-	result_recoder.set( 20 )
-	pp result_recoder
-	pp result_recoder.test( 20 )
-	result_recoder.reset( 20 )
-	pp result_recoder
-	pp result_recoder.test( 20 )
+	pp using_number_recoder
+	using_number_recoder.set( 20 )
+	pp using_number_recoder
+	pp using_number_recoder.test( 20 )
+	using_number_recoder.reset( 20 )
+	pp using_number_recoder
+	pp using_number_recoder.test( 20 )
 	# pp bitbuffer
 	
 	
-	result_recoder.bit_count.times{|n|
-		result_recoder.set( n )
+	using_number_recoder.bit_count.times{|n|
+		using_number_recoder.set( n )
 	}
-	pp result_recoder
-	pp result_recoder.fill_all?
+	pp using_number_recoder
+	pp using_number_recoder.fill_all?
 
-	result_recoder.clear
-	(result_recoder.bit_count-1).times{|n|
-		result_recoder.set( n )
+	using_number_recoder.clear
+	(using_number_recoder.bit_count-1).times{|n|
+		using_number_recoder.set( n )
 	}
-	pp result_recoder
-	pp result_recoder.fill_all?
+	pp using_number_recoder
+	pp using_number_recoder.fill_all?
 =end
 
 	# 0 は使わないので潰して(使用済みとして)おく
-	result_recoder.clear
-	result_recoder.set( 0 )
+	using_number_recoder.clear
+	using_number_recoder.set( 0 )
 
 	# 初期値は 10..1
 	now_value = 1 << ( bit_size - 1 )
@@ -146,22 +146,22 @@ def mseq_ff( settings )
 	mask_bit = ( 1 << bit_size ) -1
 
 	result_array = []
-	recursive_depth( result_array, bit_size, result_recoder, now_value, mask_bit )
+	recursive_depth( result_array, bit_size, using_number_recoder, now_value, mask_bit )
 
 	# pp result_array
 	puts( result_array.map(&:to_s).join )
 end
 
-# 再帰部分
-# result_array, result_recoder を更新していく
-def recursive_depth( result_array, bit_size, result_recoder, now_value, mask_bit )
+# 再帰で数値が重複しないかチェックしながらビット列を作っていく
+# result_array, using_number_recoder を更新していく
+def recursive_depth( result_array, bit_size, using_number_recoder, now_value, mask_bit )
 
 	# 最上位ビットを一旦 result_array に入れる
 	result_array << ( now_value & ( 1 << ( bit_size-1 ) ) == 0 ? 0 : 1 )
-	# now_value は使用済みだと一旦記録する
-	result_recoder.set( now_value )
+	# now_value は使用済みだと一旦記録する(未使用であることは この関数呼び出し前にチェックしている)
+	using_number_recoder.set( now_value )
 
-	if result_recoder.fill_all?
+	if using_number_recoder.fill_all?
 		# この数字ですべてのパターンを網羅できた。
 
 		# 残りの now_value の最上位ビット以外のビットを result_array に入れる
@@ -179,9 +179,9 @@ def recursive_depth( result_array, bit_size, result_recoder, now_value, mask_bit
 	# now_value を右シフトしたもの( nvalue )の最下位ビットに 1, 0 を入れて次の数値を試していく
 	[ 1, 0 ].each do |last_bit|
 		n = nvalue | last_bit
-		if ! result_recoder.test( n )
+		if ! using_number_recoder.test( n )
 			# ここまでにまだ n は出現していない
-			flag_completed = recursive_depth( result_array, bit_size, result_recoder, n, mask_bit )
+			flag_completed = recursive_depth( result_array, bit_size, using_number_recoder, n, mask_bit )
 			break if flag_completed
 		end
 	end
@@ -189,7 +189,7 @@ def recursive_depth( result_array, bit_size, result_recoder, now_value, mask_bit
 	
 	# 状態を戻す
 	result_array.pop
-	result_recoder.reset( now_value )
+	using_number_recoder.reset( now_value )
 
 	return false
 end
