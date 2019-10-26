@@ -149,7 +149,10 @@ def mseq_ff( settings )
 	recursive_depth( result_array, bit_size, using_number_recoder, now_value, mask_bit )
 
 	# pp result_array
-	puts( result_array.map(&:to_s).join )
+	binary_str = result_array.map(&:to_s).join
+	puts( binary_str )
+	hex_str = binary_str.to_i(2).to_s( 16 )
+	puts( "0x" + hex_str )
 end
 
 # 再帰で数値が重複しないかチェックしながらビット列を作っていく
