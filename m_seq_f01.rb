@@ -170,27 +170,28 @@ def recursive_depth( result_array, bit_size, result_recoder, now_value, mask_bit
 			result_array << ( ( ( now_value & b ) == 0 ) ? 0 : 1 )
 			b >>= 1
 		end
-		return
+		return true
 	end
 	
 	flag_completed = false
 	nvalue = now_value << 1
 	nvalue &= mask_bit
-	# 最下位ビットに 1, 0 を入れて次の数値を試していく
+	# now_value を右シフトしたもの( nvalue )の最下位ビットに 1, 0 を入れて次の数値を試していく
 	[ 1, 0 ].each do |last_bit|
 		n = nvalue | last_bit
 		if ! result_recoder.test( n )
 			# ここまでにまだ n は出現していない
-			recursive_depth( result_array, bit_size, result_recoder, n, mask_bit )
-			flag_completed = result_recoder.fill_all?
+			flag_completed = recursive_depth( result_array, bit_size, result_recoder, n, mask_bit )
 			break if flag_completed
 		end
 	end
-	return if flag_completed
+	return true if flag_completed
 	
 	# 状態を戻す
 	result_array.pop
 	result_recoder.reset( now_value )
+
+	return false
 end
 
 
