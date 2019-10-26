@@ -135,7 +135,7 @@ def mseq_ff( settings )
 	pp result_recoder.fill_all?
 =end
 
-	# 0 は使わないので潰しておく
+	# 0 は使わないので潰して(使用済みとして)おく
 	result_recoder.clear
 	result_recoder.set( 0 )
 
@@ -153,6 +153,7 @@ def mseq_ff( settings )
 end
 
 # 再帰部分
+# result_array, result_recoder を更新していく
 def recursive_depth( result_array, bit_size, result_recoder, now_value, mask_bit )
 
 	# 最上位ビットを一旦 result_array に入れる
@@ -161,7 +162,9 @@ def recursive_depth( result_array, bit_size, result_recoder, now_value, mask_bit
 	result_recoder.set( now_value )
 
 	if result_recoder.fill_all?
-		# now_value の最上位ビット以外の残りビットを result_array に入れる
+		# この数字ですべてのパターンを網羅できた。
+
+		# 残りの now_value の最上位ビット以外のビットを result_array に入れる
 		b = 1 << ( bit_size-1-1 )
 		while( b > 0 ) do
 			result_array << ( ( ( now_value & b ) == 0 ) ? 0 : 1 )
@@ -173,14 +176,14 @@ def recursive_depth( result_array, bit_size, result_recoder, now_value, mask_bit
 	flag_completed = false
 	nvalue = now_value << 1
 	nvalue &= mask_bit
+	# 最下位ビットに 1, 0 を入れて次の数値を試していく
 	[ 1, 0 ].each do |last_bit|
 		n = nvalue | last_bit
 		if ! result_recoder.test( n )
-			# まだテストしてない値
+			# ここまでにまだ n は出現していない
 			recursive_depth( result_array, bit_size, result_recoder, n, mask_bit )
 			flag_completed = result_recoder.fill_all?
 			break if flag_completed
-
 		end
 	end
 	return if flag_completed
