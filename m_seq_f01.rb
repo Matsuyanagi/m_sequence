@@ -43,31 +43,6 @@ def mseq_ff( settings )
 	bit_size = settings[ :bit_size ]
 	using_number_recoder = UsingNumberRecorder.new( 2 ** bit_size )
 
-=begin	
-	pp using_number_recoder
-	using_number_recoder.set( 20 )
-	pp using_number_recoder
-	pp using_number_recoder.test( 20 )
-	using_number_recoder.reset( 20 )
-	pp using_number_recoder
-	pp using_number_recoder.test( 20 )
-	# pp bitbuffer
-	
-	
-	using_number_recoder.bit_count.times{|n|
-		using_number_recoder.set( n )
-	}
-	pp using_number_recoder
-	pp using_number_recoder.fill_all?
-
-	using_number_recoder.clear
-	(using_number_recoder.bit_count-1).times{|n|
-		using_number_recoder.set( n )
-	}
-	pp using_number_recoder
-	pp using_number_recoder.fill_all?
-=end
-
 	# 0 は使わないので潰して(使用済みとして)おく
 	using_number_recoder.clear
 	using_number_recoder.set( 0 )

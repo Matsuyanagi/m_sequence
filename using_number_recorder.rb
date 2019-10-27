@@ -47,8 +47,18 @@ class UsingNumberRecorder
 	# ビット数を数えるか、すべての配列を AND してビットが埋まっているか
 	# 20bit とか半端な状態が面倒
 	def fill_all?
-		# 半端ビットの処理が面倒なのでビット数を数えて、初期ビット数と同じなら全部埋まった
-		bc = @bitbuffer.inject( 0 ){ |count,b|
+		return self.using_bit_count == @bit_count
+	end
+
+	# 全ビット数
+	def bit_count
+		@bit_count
+	end
+
+	# 立っているビット数
+	# 半端ビットの処理が面倒なのでビット数を数えて、初期ビット数と同じなら全部埋まった
+	def using_bit_count
+		@bitbuffer.inject( 0 ){ |count,b|
 			c = 0
 			while( b > 0 ) do
 				c += 1 if b & 1 != 0
@@ -56,12 +66,6 @@ class UsingNumberRecorder
 			end
 			count += c
 		}
-		return bc == @bit_count
-	end
-
-	# 全ビット数
-	def bit_count
-		@bit_count
 	end
 
 	def inspect
