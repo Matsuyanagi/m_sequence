@@ -140,7 +140,9 @@ def mseq_ff( settings )
 	using_number_recoder.set( 0 )
 
 	# 初期値は 10..1
-	now_value = 1 << ( bit_size - 1 )
+	# now_value = 1 << ( bit_size - 1 )
+	# now_value |= 1
+	now_value = 0
 	now_value |= 1
 
 	mask_bit = ( 1 << bit_size ) -1
@@ -180,6 +182,7 @@ def recursive_depth( result_array, bit_size, using_number_recoder, now_value, ma
 	nvalue = now_value << 1
 	nvalue &= mask_bit
 	# now_value を右シフトしたもの( nvalue )の最下位ビットに 1, 0 を入れて次の数値を試していく
+	# ここを [ 1, 0 ], [ 0, 1 ] と代えることで別のビット列ができる。shuffle しても違うパターンができるかも
 	[ 1, 0 ].each do |last_bit|
 		n = nvalue | last_bit
 		if ! using_number_recoder.test( n )
